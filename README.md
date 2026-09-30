@@ -260,9 +260,6 @@ Never plug or unplug the LED while the output is on.
 
 ## Acknowledgements
 
-- The circuit, calculations, firmware and layout scripts were developed with Claude
-  (Anthropic's AI) working from my brief and answering to my decisions; the design record in
-  [`docs/design-record/`](docs/design-record/) is that conversation's output.
 - [KiCad](https://www.kicad.org), [Freerouting](https://github.com/freerouting/freerouting),
   [ESPHome](https://esphome.io) and [Home Assistant](https://www.home-assistant.io) do the heavy
   lifting.
