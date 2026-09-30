@@ -1,0 +1,240 @@
+# Board B (a Waveshare ESP32-S3-Zero: ESP32-S3FH4R2, 4 MB flash) for one XTM fixture. Shared by
+# every fixture: each fixture's own file (xtm-1.yaml ... xtm-4.yaml) sets the substitutions and
+# includes this.
+#
+# Pins are Board B's netlist (hardware/board_b): link TX/RX IO1/IO2, encoder A/B IO4/IO5, push IO6,
+# sync IO7, BOOT0_A IO8, A_OK IO9, NRST_A IO10 (open drain), status LED R/G/B IO11/12/13 (active
+# low). USB is the module's own USB-C (IO19/IO20). Spare on J4: IO3, IO43/IO44 (UART0). The
+# module's RGB LED (IO21) isn't used.
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  comment: XTM fixture controller (Board B)
+  min_version: 2026.9.0
+
+esp32:
+  variant: esp32s3
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [xtm_driver]
+
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+  level: INFO
+
+api:
+  encryption:
+    key: ${api_key}
+
+ota:
+  - platform: esphome
+    encryption: {}  # uses the api key above
+    # The upload blocks the loop, so the link pings stop: ask Board A to hold the level.
+    on_begin:
+      then:
+        - lambda: id(xtm).hold(120);
+    on_error:
+      then:
+        - lambda: id(xtm).hold(0);
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # ESP-NOW sync needs the radio listening all the time.
+  power_save_mode: none
+  ap:
+    ssid: ${name}
+    password: !secret fallback_password
+
+captive_portal:
+
+uart:
+  id: link_uart
+  tx_pin: GPIO1
+  rx_pin: GPIO2
+  baud_rate: 115200
+  rx_buffer_size: 512
+
+# While on Wi-Fi, ESP-NOW uses the access point's channel: every fixture must join the same AP.
+espnow:
+  id: espnow_bus
+
+# Status LED, active low. 25 kHz keeps even the indicator clear of the flicker band.
+output:
+  - platform: ledc
+    id: led_r
+    pin: {number: GPIO11, inverted: true}
+    frequency: 25000Hz
+  - platform: ledc
+    id: led_g
+    pin: {number: GPIO12, inverted: true}
+    frequency: 25000Hz
+  - platform: ledc
+    id: led_b
+    pin: {number: GPIO13, inverted: true}
+    frequency: 25000Hz
+
+xtm_driver:
+  id: xtm
+  uart_id: link_uart
+  boot0_pin: GPIO8
+  nrst_pin:
+    number: GPIO10
+    mode:
+      output: true
+      open_drain: true
+  status_led:
+    red: led_r
+    green: led_g
+    blue: led_b
+    brightness: 30%
+  encoder:
+    step: 1%
+    minimum: 1%
+    transition_length: 80ms
+  sync:
+    espnow_id: espnow_bus
+    key: ${sync_key}
+
+light:
+  - platform: xtm_driver
+    id: xtm_light
+    name: None
+    restore_mode: RESTORE_DEFAULT_OFF
+    default_transition_length: 1s
+    gamma_correct: 1.0
+
+sensor:
+  - platform: xtm_driver
+    led_current:
+      name: LED current
+    led_voltage:
+      name: LED voltage
+    output_voltage:
+      name: Driver output voltage
+    input_voltage:
+      name: 48 V input
+    fet_temperature:
+      name: Sink FET temperature
+    buck_temperature:
+      name: Buck temperature
+    aux_temperature:
+      name: Aux rail temperature
+    precision_temperature:
+      name: Precision section temperature
+    full_scale_light:
+      name: Full scale light
+    board_a_uptime:
+      name: Driver uptime
+    link_errors:
+      name: Link errors
+  # PEC11R: 24 detents, one quadrature cycle each. Swap pin_a and pin_b if clockwise dims.
+  - platform: rotary_encoder
+    id: knob
+    internal: true
+    pin_a: GPIO4
+    pin_b: GPIO5
+    resolution: 1
+    on_clockwise:
+      - lambda: id(xtm).encoder_step(1);
+    on_anticlockwise:
+      - lambda: id(xtm).encoder_step(-1);
+  - platform: wifi_signal
+    name: Wi-Fi signal
+    update_interval: 60s
+  - platform: uptime
+    name: Controller uptime
+
+text_sensor:
+  - platform: xtm_driver
+    driver_state:
+      name: Driver state
+    fault:
+      name: Fault
+    sync_role:
+      name: Sync
+    board_a_firmware:
+      name: Driver firmware
+
+binary_sensor:
+  - platform: xtm_driver
+    link:
+      name: Driver link
+    derating:
+      name: Thermal derating
+    calibrated:
+      name: Calibrated
+    light_matched:
+      name: Light matched
+  # Knob push: on/off. The board has 10k pull-ups and 10k/10 nF filters on these inputs.
+  - platform: gpio
+    id: knob_push
+    internal: true
+    pin:
+      number: GPIO6
+      inverted: true
+    filters:
+      - delayed_on_off: 10ms
+    on_click:
+      min_length: 20ms
+      max_length: 800ms
+      then:
+        - light.toggle:
+            id: xtm_light
+            transition_length: 400ms
+  # Sync: take the lead (every other fixture follows this one), or end the group.
+  - platform: gpio
+    id: sync_button
+    internal: true
+    pin:
+      number: GPIO7
+      inverted: true
+    filters:
+      - delayed_on_off: 10ms
+    on_click:
+      min_length: 20ms
+      max_length: 1500ms
+      then:
+        - lambda: id(xtm).sync_press();
+  # Board A drives A_OK high once its firmware is running.
+  - platform: gpio
+    name: Driver running
+    pin: GPIO9
+    device_class: running
+    entity_category: diagnostic
+
+button:
+  - platform: xtm_driver
+    clear_fault:
+      name: Clear fault
+    identify:
+      name: Identify
+    restart_board_a:
+      name: Restart driver
+  - platform: restart
+    name: Restart controller
+
+number:
+  - platform: xtm_driver
+    link_loss_level:
+      name: Link-loss level
+    tail_end_current:
+      name: Bottom current
+    full_scale_current:
+      name: Full-scale current
+    fleet_reference_light:
+      name: Fleet reference light
+    link_timeout:
+      name: Link timeout
+
+switch:
+  - platform: xtm_driver
+    sync_lead:
+      name: Sync lead

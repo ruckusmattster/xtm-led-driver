@@ -1,0 +1,11 @@
+# Fixture 4. Flash the first time with the ESP32-S3-Zero out of Board B, over its own USB-C;
+# later over Wi-Fi:
+#   esphome run xtm-4.yaml
+substitutions:
+  name: xtm-4
+  friendly_name: XTM 4
+  api_key: !secret xtm4_api_key
+  sync_key: !secret sync_key
+
+packages:
+  fixture: !include xtm-common.yaml

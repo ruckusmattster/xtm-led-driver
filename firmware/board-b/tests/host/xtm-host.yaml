@@ -1,0 +1,121 @@
+# Host (Linux) build of the xtm_driver component for the end-to-end test in run_host_test.py.
+# The UART is a pseudo-terminal served by board_a_sim.py; ESP-NOW sync is ESP32-only and is
+# covered by the unit tests instead.
+esphome:
+  name: xtm-host
+
+host:
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+    components: [xtm_driver]
+
+logger:
+  level: DEBUG
+
+api:
+  port: 16053
+
+uart:
+  id: link_uart
+  port: /tmp/xtm-sim-pty
+  baud_rate: 115200
+
+xtm_driver:
+  id: xtm
+  uart_id: link_uart
+  encoder:
+    step: 1%
+    minimum: 1%
+    transition_length: 80ms
+  update_interval: 250ms
+
+light:
+  - platform: xtm_driver
+    id: xtm_light
+    name: Light
+    restore_mode: RESTORE_DEFAULT_OFF
+    default_transition_length: 1s
+
+sensor:
+  - platform: xtm_driver
+    led_current:
+      name: LED current
+    led_voltage:
+      name: LED voltage
+    output_voltage:
+      name: Output voltage
+    input_voltage:
+      name: Input voltage
+    fet_temperature:
+      name: FET temperature
+    buck_temperature:
+      name: Buck temperature
+    aux_temperature:
+      name: Aux temperature
+    precision_temperature:
+      name: Precision temperature
+    full_scale_light:
+      name: Full scale light
+    board_a_uptime:
+      name: Driver uptime
+    link_errors:
+      name: Link errors
+
+text_sensor:
+  - platform: xtm_driver
+    driver_state:
+      name: Driver state
+    fault:
+      name: Fault
+    sync_role:
+      name: Sync
+    board_a_firmware:
+      name: Driver firmware
+
+binary_sensor:
+  - platform: xtm_driver
+    link:
+      name: Driver link
+    derating:
+      name: Derating
+    calibrated:
+      name: Calibrated
+    light_matched:
+      name: Light matched
+
+button:
+  - platform: xtm_driver
+    clear_fault:
+      name: Clear fault
+    identify:
+      name: Identify
+  - platform: template
+    name: Knob up
+    on_press:
+      - lambda: id(xtm).encoder_step(1);
+  - platform: template
+    name: Knob down
+    on_press:
+      - lambda: id(xtm).encoder_step(-1);
+  - platform: template
+    name: Knob push
+    on_press:
+      - light.toggle:
+          id: xtm_light
+          transition_length: 400ms
+
+number:
+  - platform: xtm_driver
+    link_loss_level:
+      name: Link-loss level
+    tail_end_current:
+      name: Bottom current
+    full_scale_current:
+      name: Full-scale current
+    fleet_reference_light:
+      name: Fleet reference light
+    link_timeout:
+      name: Link timeout

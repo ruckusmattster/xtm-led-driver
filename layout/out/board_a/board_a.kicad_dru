@@ -1,0 +1,54 @@
+(version 1)
+# Board A custom design rules (KiCad 8 or later). Copy next to the .kicad_pcb as <project>.kicad_dru
+# (layout/make_board.py does this, and sets up the net classes below).
+# Later rules take precedence over earlier ones, so keep the exemption at the end last.
+# Net classes (Board Setup > Net Classes, pattern assignments):
+#   HV         +48V_RAW, +48V, VOUT, BUCK_SW, BUCK_BOOT, AUX_SW, AUX_BOOT, CATHODE
+#              track 0.6 mm (routed; wider where drawn by hand), clearance 0.5 mm
+#   Aux        +5V5, +5V5_LINK            track 0.5 mm
+#   Precision  SET*, NINV*, SNSHI*, SNSLO*, DAC_OUT*, DAC_REF, BIAS
+#              track 0.2 mm, clearance 0.2 mm
+#   Default    everything else            track 0.2 mm, clearance 0.2 mm, via 0.6/0.3 mm
+
+# IPC-2221B Table 6-1, 51-100 V (the 52.8 V worst-case input and every node that swings to it):
+#   conductors under solder mask (B4): 0.13 mm, used here at 0.3 mm;
+#   bare component terminations, i.e. pads (A6): 0.5 mm, used as is;
+#   inner layers (B1): 0.1 mm, used at 0.3 mm.
+# (B2, 0.6 mm, is for bare copper conductors, which these boards don't have outside the pads.)
+(rule "HV clearance, outer layers"
+  (layer outer)
+  (condition "A.NetClass == 'HV' && B.NetClass != 'HV'")
+  (constraint clearance (min 0.3mm)))
+
+(rule "HV clearance, outer layers, exposed pads"
+  (layer outer)
+  (condition "A.NetClass == 'HV' && B.NetClass != 'HV' && (A.Type == 'Pad' || B.Type == 'Pad')")
+  (constraint clearance (min 0.5mm)))
+
+(rule "HV clearance, inner layers"
+  (layer inner)
+  (condition "A.NetClass == 'HV' && B.NetClass != 'HV'")
+  (constraint clearance (min 0.3mm)))
+
+# Surface leakage from a 40 V node into a Kelvin or setpoint node shows up as offset.
+(rule "Precision nets away from HV"
+  (condition "A.NetClass == 'Precision' && B.NetClass == 'HV'")
+  (constraint clearance (min 2mm)))
+
+# Keep the setpoint and sense wiring well clear of both switch nodes.
+# ('*' matches the '/' KiCad prefixes to local-label net names.)
+(rule "Precision nets away from switch nodes"
+  (condition "A.NetClass == 'Precision' && (B.NetName == '*BUCK_SW' || B.NetName == '*AUX_SW')")
+  (constraint clearance (min 10mm)))
+
+# The two SW nodes stay on the top layer: no vias on them.
+(rule "Switch nodes on L1 only"
+  (condition "A.NetName == '*BUCK_SW' || A.NetName == '*AUX_SW'")
+  (constraint disallow via))
+
+# A part's own pins keep the part's own spacing. The SOT-23 sinks Q2-Q4 have 0.53 mm between the
+# drain pad (CATHODE, HV class) and the gate and source pads; the parts are rated 60 V. Tracks and
+# copper leaving those pads still get the HV clearances above.
+(rule "Pads of one sink FET"
+  (condition "A.Type == 'Pad' && B.Type == 'Pad' && ((A.memberOfFootprint('Q2') && B.memberOfFootprint('Q2')) || (A.memberOfFootprint('Q3') && B.memberOfFootprint('Q3')) || (A.memberOfFootprint('Q4') && B.memberOfFootprint('Q4')))")
+  (constraint clearance (min 0.2mm)))

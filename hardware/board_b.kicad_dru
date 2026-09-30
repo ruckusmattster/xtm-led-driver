@@ -1,0 +1,7 @@
+(version 1)
+# Board B custom design rules. The layout script copies this next to the .kicad_pcb as <project>.kicad_dru.
+# Net classes (set by layout/board_b_layout.py): Default track 0.2 mm, clearance 0.2 mm, via 0.6/0.3 mm;
+# Power (+5V5_IN, +5V5_F, +5V_SYS, +3V3, GND) track 0.3 mm.
+# The copper keep-out under the ESP32-S3-Zero's antenna is a rule area inside U1's footprint
+# (layout/lib/XTM.pretty/ESP32-S3-Zero_Socket), checked by the normal DRC.
+

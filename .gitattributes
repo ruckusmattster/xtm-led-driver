@@ -1,0 +1,17 @@
+* text=auto
+
+# Windows batch files need CRLF line endings
+*.bat text eol=crlf
+
+# CSVs (BOMs, placement files) keep their CRLF line endings exactly as generated
+*.csv -text
+
+# Binary outputs
+*.png binary
+*.zip binary
+
+# Keep GitHub's language statistics about this project's own code
+firmware/board-a/third_party/** linguist-vendored
+hardware/board_a/** linguist-generated
+hardware/board_b/** linguist-generated
+layout/out/** linguist-generated

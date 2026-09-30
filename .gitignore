@@ -1,0 +1,46 @@
+# Build output
+build/
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+*.map
+
+# Test and simulation binaries
+design/sim/handover
+firmware/board-a/tests/test_core
+firmware/board-b/tests/test_board_b
+firmware/board-b/tests/host/xtm-host
+
+# ESPHome (secrets.yaml holds Wi-Fi passwords and keys: never commit it)
+.esphome/
+firmware/board-b/secrets.yaml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# KiCad
+*.kicad_prl
+*-backups/
+fp-info-cache
+*.lck
+*.kicad_pcb.kicad_pro
+
+# Layout-script scratch (the finished boards in layout/out/ are committed)
+layout/tools/
+layout/logs/
+layout/out/*/best-attempt/
+layout/out/*/gerbers/
+layout/out/*/*.dsn
+layout/out/*/*.ses
+layout/out/*/*_freerouting*.log
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

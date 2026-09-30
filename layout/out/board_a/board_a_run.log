@@ -1,0 +1,18 @@
+board_a: stage all, KiCad 9.0.3, 2026-09-30 17:03
+placed 206 parts in 34 s
+  92 fan-out vias on GND
+routing with Freerouting (attempt 1 of 6, up to 1800 s) ...
+  routed at 226 s: 17 stubs removed, 0 connections open, 0 clearance errors, 0 plane pads without a via
+  202 stitching vias on GND
+  references: 105 on the silkscreen, 69 on the fab layer only (no room)
+  18 vias added to pour fragments
+  removed 0 dangling stub(s) and 1 stitching via(s) no pour reached
+violations: 36  unconnected: 0
+  warning  silk_edge_clearance          11
+  warning  silk_over_copper             4
+  warning  silk_overlap                 21
+  preview <repo>/layout/out/board_a/board_a-1-FCu_FSilkS.png
+  preview <repo>/layout/out/board_a/board_a-2-BCu_EdgeCuts.png
+  preview <repo>/layout/out/board_a/board_a-3-In2Cu_EdgeCuts.png
+  fabrication files: <repo>/layout/out/board_a/board_a-gerbers.zip; CPL <repo>/layout/out/board_a/board_a-cpl-jlc.csv
+done in 263 s: 0 DRC errors, 0 unconnected

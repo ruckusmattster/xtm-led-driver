@@ -1,0 +1,24 @@
+Refs,Qty/board,Qty for 7 boards (+spares),Value,Description,Manufacturer,MPN,Digi-Key,Mouser,LCSC,Footprint,Placement,Status,Notes
+C1,1,17,10uF,10 uF 25 V X5R 0805,Samsung,CL21A106KAYNNNE,,,C15850,C_0805_2012Metric,stencil,verified LCSC C15850,
+C3,1,17,100nF,100 nF 50 V X7R 0603,YAGEO,CC0603KRX7R9BB104,,,C14663,C_0603_1608Metric,stencil,verified LCSC (this session),
+C8 C9 C10 C11,4,38,10nF,10 nF 50 V X7R 0603,,,,,,C_0603_1608Metric,stencil,describe,
+D1,1,8,B5819W,"40 V 1 A Schottky, SOD-123",JSCJ,B5819W SL,,,C8598,D_SOD-123,stencil,verified LCSC C8598 = JSCJ B5819W SL,
+D3,1,17,red,"Red LED 0603, Vf ~2 V",Hubei KENTO,KT-0603R,,,C2286,LED_0603_1608Metric,stencil,verified LCSC C2286,
+D4,1,17,green,"Green LED 0603, Vf ~3.1 V",Hubei KENTO,KT-0603G,,,C12624,LED_0603_1608Metric,stencil,verified LCSC C12624,
+D5,1,17,blue,"Blue LED 0603, Vf ~3.1 V",Hubei KENTO,KT-0603B,,,C2288,LED_0603_1608Metric,stencil,verified LCSC C2288,
+FB1,1,17,600R@100MHz 2A,"Ferrite bead 600 ohm at 100 MHz, 0805, 2 A, 90 mohm",Sunlord,UPZ2012E601-2R0TF,,,C98308,L_0805_2012Metric,stencil,verified JLC C98308,
+FID1 FID2 FID3,3,21,FID,Fiducial,,,,,,Fiducial_1mm_Mask2mm,stencil,n/a,
+H1 H2,2,14,M3,"M3 mounting hole, unplated",,,,,,MountingHole_3.2mm_M3,stencil,n/a,
+J1,1,8,2x5 box header,"2x5 2.54 mm shrouded box header, vertical, through-hole (any maker; key slot toward the board edge)",,,,,,IDC-Header_2x05_P2.54mm_Vertical,hand,describe,
+J3,1,8,JST PH 2,2-pin JST PH header for an external sync button,JST,B2B-PH-K-S(LF)(SN),,,,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,hand,describe,
+J4,1,8,1x5 header,"1x5 2.54 mm pin header, optional",,,,,,PinHeader_1x05_P2.54mm_Vertical,hand,describe,
+R7 R8 R9 R10 R11 R12 R13 R14,8,72,10k,Resistor 10k 1% 0603 thick film,UNI-ROYAL,0603WAF1002T5E,,,C25804,R_0603_1608Metric,stencil,verified LCSC C25804,
+R15,1,17,1k,Resistor 1k 1% 0603 thick film,UNI-ROYAL,0603WAF1001T5E,,,C21190,R_0603_1608Metric,stencil,verified LCSC C21190,
+R16 R17,2,24,220R,Resistor 220R 1% 0603 thick film,UNI-ROYAL,0603WAF2200T5E,,,C22962,R_0603_1608Metric,stencil,verified LCSC C22962,
+R18 R19 R20 R21 R23,5,45,100R,Resistor 100R 1% 0603 thick film,UNI-ROYAL,0603WAF1000T5E,,,C22775,R_0603_1608Metric,stencil,verified LCSC C22775,
+R22,1,17,100k,Resistor 100k 1% 0603 thick film,UNI-ROYAL,0603WAF1003T5E,,,C25803,R_0603_1608Metric,stencil,verified LCSC C25803,
+SW3,1,8,PEC11R-4220F-S0024,"24-detent encoder with push switch, 20 mm flatted shaft",Bourns,PEC11R-4220F-S0024,,,,RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm_CircularMountingHoles,hand,"verified Bourns ordering code; Newark, Digi-Key and Mouser stock it","LCSC's C462143 is the knurled -4220K, so no LCSC number. The EC11E footprint's 1.5 mm lug slots are narrower than Bourns' 1.8 x 2.1 mm lug holes, hence the round 2.6 mm holes: test-fit a real encoder on a 1:1 print"
+SW4,1,8,SYNC,"6 x 6 mm SMD tactile switch, 4 gull-wing pads (Omron B3S-1000 or C&K PTS645 SMD land); pick SW4's height so it reaches the panel",,,,,,SW_SPST_B3S-1000,stencil,describe,
+TP1 TP2 TP3,3,21,TP,1 mm test pad (copper only),,,,,,TestPoint_Pad_D1.0mm,stencil,n/a,
+U1,1,8,ESP32-S3-Zero-M,"Waveshare ESP32-S3-Zero with pre-soldered pin headers: ESP32-S3FH4R2 (4 MB flash, 2 MB PSRAM), USB-C, 3.3 V LDO (ME6217C33, 800 mA), BOOT and RESET buttons, ceramic antenna, 23.5 x 18 mm",Waveshare,ESP32-S3-Zero-M,,,,ESP32-S3-Zero_Socket,hand: plugs into the two 1x9 sockets on the bottom,verified waveshare.com product page (SKU 25081 without header; -M = header fitted),Pin order from Waveshare's top-view photo and the community KiCad footprint (github.com/jtomka/kicad-esp32-s3-zero). Its 5V pin is its USB VBUS: never plug USB into it while the ribbon from Board A is connected (flash it off the board)
+U1 sockets,2,16,1x9 socket,"1x9 2.54 mm female header, vertical, through-hole, about 8.5 mm tall, gold-plated contacts (any maker): the ESP32-S3-Zero's socket, soldered into U1's pads from the top",,,,,,-,"hand, bottom side",describe,"Solder both with the module plugged in, so the rows end up exactly parallel"

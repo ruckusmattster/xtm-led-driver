@@ -1,0 +1,20 @@
+Comment,Designator,Footprint,LCSC Part #,JLC class,Loading fee note
+10uF,C1,C_0805_2012Metric,C15850,Basic,none (Economic PCBA)
+100nF,C3,C_0603_1608Metric,C14663,Basic,none (Economic PCBA)
+10nF,"C8,C9,C10,C11",C_0603_1608Metric,,Basic (expected; pick the part in JLC's BOM tool),none (Economic PCBA)
+B5819W,D1,D_SOD-123,C8598,Basic,none (Economic PCBA)
+red,D3,LED_0603_1608Metric,C2286,Basic,none (Economic PCBA)
+green,D4,LED_0603_1608Metric,C12624,Extended,~$3 per unique part per order (Economic PCBA)
+blue,D5,LED_0603_1608Metric,C2288,Extended,~$3 per unique part per order (Economic PCBA)
+600R@100MHz 2A,FB1,L_0805_2012Metric,C98308,Extended,~$3 per unique part per order (Economic PCBA)
+2x5 box header,J1,IDC-Header_2x05_P2.54mm_Vertical,,-,not placed by JLC
+JST PH 2,J3,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,,-,not placed by JLC
+1x5 header,J4,PinHeader_1x05_P2.54mm_Vertical,,-,not placed by JLC
+10k,"R7,R8,R9,R10,R11,R12,R13,R14",R_0603_1608Metric,C25804,Basic,none (Economic PCBA)
+1k,R15,R_0603_1608Metric,C21190,Basic,none (Economic PCBA)
+220R,"R16,R17",R_0603_1608Metric,C22962,Basic,none (Economic PCBA)
+100R,"R18,R19,R20,R21,R23",R_0603_1608Metric,C22775,Basic,none (Economic PCBA)
+100k,R22,R_0603_1608Metric,C25803,Basic,none (Economic PCBA)
+PEC11R-4220F-S0024,SW3,RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm_CircularMountingHoles,,-,not placed by JLC
+SYNC,SW4,SW_SPST_B3S-1000,,Basic (expected; pick the part in JLC's BOM tool),none (Economic PCBA)
+ESP32-S3-Zero-M,U1,ESP32-S3-Zero_Socket,,-,not placed by JLC

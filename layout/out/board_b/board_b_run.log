@@ -1,0 +1,14 @@
+board_b: stage all, KiCad 9.0.3, 2026-09-30 17:03
+placed 42 parts in 2 s
+  9 fan-out vias on GND
+routing with Freerouting (attempt 1 of 6, up to 900 s) ...
+  routed at 48 s: 0 stubs removed, 0 connections open, 0 clearance errors, 0 plane pads without a via
+  168 stitching vias on GND
+  references: 30 on the silkscreen, 3 on the fab layer only (no room)
+  13 vias added to pour fragments
+violations: 2  unconnected: 0
+  warning  silk_edge_clearance          2
+  preview <repo>/layout/out/board_b/board_b-1-FCu_FSilkS.png
+  preview <repo>/layout/out/board_b/board_b-2-BCu_BSilkS.png
+  fabrication files: <repo>/layout/out/board_b/board_b-gerbers.zip; CPL <repo>/layout/out/board_b/board_b-cpl-jlc.csv
+done in 53 s: 0 DRC errors, 0 unconnected

@@ -1,0 +1,212 @@
+
+==============================================================================
+1. Setpoint chain
+==============================================================================
+Divider 12.0k/1.00k -> ratio 1/13; sense full scale 192.3 mV; LSB 2.934 uV; Thevenin 923 ohm; with 10 nF C0G, tau 9.2 us
+ch1 (0.1 ohm): 14-150 mV sense -> codes 4771-51118 (full scale is 1.28x the band top); one code at range bottom = 0.0210 %
+ch2 (1 ohm): 14-160 mV sense -> codes 4771-54526 (full scale is 1.20x the band top); one code at range bottom = 0.0210 %
+ch3 (10 ohm): 14-160 mV sense -> codes 4771-54526 (full scale is 1.20x the band top); one code at range bottom = 0.0210 %
+ch4 (100 ohm): 14-160 mV sense -> codes 4771-54526 (full scale is 1.20x the band top); one code at range bottom = 0.0210 %
+Zero bias: 250 nA -> 250 uV at -IN; worst-case code-0 input 126 uV -> margin 124 uV
+  bias falls to 162 nA at 160 mV setpoint: a 0.055 % linear gain term, removed by the two-point calibration
+  ch1: dead zone (code-0 margin) =   2497.8 uA-equivalent
+  ch2: dead zone (code-0 margin) =    250.0 uA-equivalent
+  ch3: dead zone (code-0 margin) =     25.2 uA-equivalent
+  ch4: dead zone (code-0 margin) =      2.7 uA-equivalent
+Keep-alive: 25 uV above the dead-zone edge -> ch1 250 uA, ch2 25 uA, ch3 2.5 uA, ch4 0.25 uA
+
+==============================================================================
+2. Error budget
+==============================================================================
+  offset  op-amp offset drift 0.05 uV/C max                   1.00 uV
+  offset  DAC INL left after 2-point cal, +-1 LSB             2.93 uV
+  offset  DAC offset drift 1 uV/C x1.5 margin, /13            2.31 uV
+  offset  thermal EMF at shunt terminations                   1.00 uV
+  offset  op-amp Ib 800 pA max into ~1 kohm                   0.80 uV
+  offset  zero-bias drift (1.82M 100 ppm/C, divider, LDO)     1.25 uV
+  offset RSS (ch2-4) 4.26 uV (sum 9.29), ch1 4.60 uV (sum 10.29)
+  gain ch1: DAC ref 5 ppm/C max + gain drift 1 ppm/C 120 ppm, divider ratio, 2 x 25 ppm/C (RSS) 707 ppm, WSK2512 35 ppm/C 700 ppm, self-heating residual 100 ppm
+  gain ch2: DAC ref 5 ppm/C max + gain drift 1 ppm/C 120 ppm, divider ratio, 2 x 25 ppm/C (RSS) 707 ppm, thin film 25 ppm/C 500 ppm
+  gain ch3: DAC ref 5 ppm/C max + gain drift 1 ppm/C 120 ppm, divider ratio, 2 x 25 ppm/C (RSS) 707 ppm, thin film 25 ppm/C 500 ppm
+  gain ch4: DAC ref 5 ppm/C max + gain drift 1 ppm/C 120 ppm, divider ratio, 2 x 25 ppm/C (RSS) 707 ppm, thin film 25 ppm/C 500 ppm
+
+  range  shunt        current     sense      RSS    worst  note
+  1      0.1 ohm   140.000 mA   14.00mV   0.106%   0.266%  
+  1      0.1 ohm       1.40 A  140.00mV   0.101%   0.199%  
+  2      1 ohm      14.000 mA   14.00mV   0.093%   0.228%  
+  2      1 ohm     140.000 mA  140.00mV   0.087%   0.169%  
+  3      10 ohm      1.400 mA   14.00mV   0.093%   0.228%  
+  3      10 ohm     14.000 mA  140.00mV   0.087%   0.169%  
+  4      100 ohm     0.140 mA   14.00mV   0.105%   0.278%  
+  4      100 ohm     1.400 mA  140.00mV   0.088%   0.174%  
+  tail   100 ohm     0.014 mA    1.40mV   0.592%   1.326%  
+  tail   100 ohm     0.005 mA    0.50mV   1.641%   3.420%  
+  4      100 ohm     0.700 mA   70.00mV   0.107%   0.318%  ch3 keep-alive armed
+  3      10 ohm      7.000 mA   70.00mV   0.107%   0.308%  ch2 keep-alive armed
+  2      1 ohm      70.000 mA   70.00mV   0.110%   0.322%  ch1 keep-alive armed
+  (range-4 and tail rows include ~70 nA of board/FET leakage, always additive)
+  1      WSL2512   140.000 mA   14.00mV   0.170%   0.346%  fallback shunt
+  1      WSL2512       1.40 A  140.00mV   0.167%   0.279%  fallback shunt
+
+==============================================================================
+3. V_out ripple -> LED current, with and without C_a across the LED
+==============================================================================
+C_g estimate 500 pF (NDT3055L 428 pF at 1 V, 3 small FETs, trace, tap); C_a 22 nF nominal, ~15.4 nF at 30 V
+
+  V_out ripple giving 1 % LED-current modulation (mV):
+      I_LED              100Hz      1000Hz     10000Hz     20000Hz    400000Hz
+     0.005mA  no C_a:       159.3        17.2         6.7         6.5         6.5
+             C_a   :       260.9       207.4       206.8       206.8       206.7
+     0.014mA  no C_a:       445.8        45.0         7.9         6.9         6.5
+             C_a   :       491.4       211.5       206.8       206.8       206.7
+     0.140mA  no C_a:      4457.5       445.8        45.0        23.2         6.6
+             C_a   :      4462.2       491.4       211.5       207.9       206.8
+     1.400mA  no C_a:     44574.5      4457.5       445.8       223.0        12.9
+             C_a   :     44575.0      4462.2       491.4       304.0       207.1
+    14.000mA  no C_a:    445745.0     44574.5      4457.5      2228.7       111.6
+             C_a   :    445745.1     44575.0      4462.2      2238.3       234.9
+   140.000mA  no C_a:   4457450.2    445745.0     44574.5     22287.3      1114.4
+             C_a   :   4457450.2    445745.1     44575.0     22288.2      1133.4
+  1400.000mA  no C_a:  44574502.1   4457450.2    445745.0    222872.5     11143.6
+             C_a   :  44574502.1   4457450.2    445745.1    222872.6     11145.5
+  worst in 0.1-20 kHz down to 5 uA: 6.5 mV without C_a, 207 mV with C_a
+  sensitivity: C_g = 250 pF -> 407 mV
+  sensitivity: C_g = 1000 pF -> 107 mV
+  C_a ripple current at 400 kHz, 30 mV p-p: 1.16 mA p-p (stays on the board)
+
+==============================================================================
+4. Sink loop stability (C_C 2.2 nF on all four channels)
+==============================================================================
+  ch1 NDT3055L  Rs=  0.1  I=   0.25000 mA  gm=  0.00604 S  follower 0.0006  crossover    0.043 kHz  PM  90.0 deg keep-alive
+  ch1 NDT3055L  Rs=  0.1  I= 140.00000 mA  gm=  1.30958 S  follower 0.1158  crossover    8.327 kHz  PM  89.6 deg 
+  ch1 NDT3055L  Rs=  0.1  I=1500.00000 mA  gm=  4.28661 S  follower 0.3000  crossover   21.555 kHz  PM  89.0 deg 
+  ch2 2N7002BK  Rs=  1.0  I=   0.02500 mA  gm=  0.00064 S  follower 0.0006  crossover    0.046 kHz  PM  90.0 deg keep-alive
+  ch2 2N7002BK  Rs=  1.0  I=  14.00000 mA  gm=  0.11832 S  follower 0.1058  crossover    7.612 kHz  PM  89.9 deg 
+  ch2 2N7002BK  Rs=  1.0  I= 160.00000 mA  gm=  0.40000 S  follower 0.2857  crossover   20.537 kHz  PM  89.8 deg 
+  ch3 2N7002    Rs= 10.0  I=   0.00250 mA  gm=  0.00006 S  follower 0.0006  crossover    0.046 kHz  PM  90.1 deg keep-alive
+  ch3 2N7002    Rs= 10.0  I=   1.40000 mA  gm=  0.02898 S  follower 0.2247  crossover   16.163 kHz  PM  89.9 deg 
+  ch3 2N7002    Rs= 10.0  I=  16.00000 mA  gm=  0.09798 S  follower 0.4949  crossover   35.610 kHz  PM  89.7 deg 
+  ch4 2N7002    Rs=100.0  I=   0.00025 mA  gm=  0.00001 S  follower 0.0006  crossover    0.046 kHz  PM  90.1 deg keep-alive
+  ch4 2N7002    Rs=100.0  I=   0.00500 mA  gm=  0.00013 S  follower 0.0127  crossover    0.915 kHz  PM  90.1 deg 
+  ch4 2N7002    Rs=100.0  I=   0.14000 mA  gm=  0.00361 S  follower 0.2653  crossover   19.078 kHz  PM  89.9 deg 
+  ch4 2N7002    Rs=100.0  I=   1.60000 mA  gm=  0.03098 S  follower 0.7560  crossover   54.399 kHz  PM  89.5 deg 
+  clamp: 2N7002BK at Vgs 3.3 V, Rds ~4 ohm -> gate held at 88 mV with the op-amp at its 4.9 V rail (NDT3055L Vth min 1.0 V at 25 C, ~0.7 V at 100 C)
+  clamp: 2N7002BK at Vgs 3.3 V, Rds ~10 ohm -> gate held at 213 mV with the op-amp at its 4.9 V rail (NDT3055L Vth min 1.0 V at 25 C, ~0.7 V at 100 C)
+  Miller: 30 mV of 400 kHz on the drain -> 2.3 uA into the gate -> 0.72 mV -> 0.21 % at 1.4 A (out of band)
+
+  Priming (dead zone -> keep-alive), integrator ramps at e/tau until the FET conducts:
+    2N7002   Vth 1.0 V: V_on at 2.5 uA = 0.77 V; e = 15.7 uV ->   108 ms
+    2N7002   Vth 1.0 V: V_on at 2.5 uA = 0.77 V; e = 25.0 uV ->    68 ms
+    2N7002   Vth 2.5 V: V_on at 2.5 uA = 2.27 V; e = 15.7 uV ->   318 ms
+    2N7002   Vth 2.5 V: V_on at 2.5 uA = 2.27 V; e = 25.0 uV ->   200 ms
+    NDT3055L Vth 1.0 V: V_on at 250 uA = 0.82 V; e = 15.7 uV ->   114 ms
+    NDT3055L Vth 1.0 V: V_on at 250 uA = 0.82 V; e = 25.0 uV ->    72 ms
+    NDT3055L Vth 2.0 V: V_on at 250 uA = 1.82 V; e = 15.7 uV ->   254 ms
+    NDT3055L Vth 2.0 V: V_on at 250 uA = 1.82 V; e = 25.0 uV ->   160 ms
+  gate-monitor tap: 100k/100k from each op-amp output, 1 nF at the ADC pin -> 0-2.45 V, tau 50 us, load 25 uA max
+
+==============================================================================
+5. Blend-band handover during fades (sim/handover.c)
+==============================================================================
+  Fade time is for the full 5 uA-1.4 A range; a shorter fade over part of the range with the same
+  rate of change in log(I) behaves the same.  Deviation of the summed sink current from the ideal
+  curve, after a 1 ms low-pass (roughly what an eye or a 240 fps frame integrates):
+  band 1     1 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -4.005 % (vs staircase  -3.982 %), after 1 ms low-pass  -1.335 %
+  band 1     1 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +3.799 % (vs staircase  +3.775 %), after 1 ms low-pass  +0.932 %
+  band 1    10 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.397 % (vs staircase  -0.395 %), after 1 ms low-pass  -0.131 %
+  band 1    10 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.396 % (vs staircase  +0.394 %), after 1 ms low-pass  +0.113 %
+  band 1    60 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.074 % (vs staircase  -0.074 %), after 1 ms low-pass  -0.025 %
+  band 1    60 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.074 % (vs staircase  +0.074 %), after 1 ms low-pass  +0.023 %
+  band 2     1 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -4.455 % (vs staircase  -4.426 %), after 1 ms low-pass  -1.505 %
+  band 2     1 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +4.310 % (vs staircase  +4.279 %), after 1 ms low-pass  +1.178 %
+  band 2    10 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.450 % (vs staircase  -0.447 %), after 1 ms low-pass  -0.141 %
+  band 2    10 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.446 % (vs staircase  +0.444 %), after 1 ms low-pass  +0.141 %
+  band 2    60 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.082 % (vs staircase  -0.082 %), after 1 ms low-pass  -0.028 %
+  band 2    60 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.082 % (vs staircase  +0.082 %), after 1 ms low-pass  +0.029 %
+  band 3     1 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -3.585 % (vs staircase  -3.551 %), after 1 ms low-pass  -1.521 %
+  band 3     1 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +3.403 % (vs staircase  +3.365 %), after 1 ms low-pass  +1.096 %
+  band 3    10 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.359 % (vs staircase  -0.355 %), after 1 ms low-pass  -0.141 %
+  band 3    10 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.353 % (vs staircase  +0.350 %), after 1 ms low-pass  +0.133 %
+  band 3    60 s up   primed   Cc 2.2 nF Cdiv  10 nF: peak  -0.067 % (vs staircase  -0.067 %), after 1 ms low-pass  -0.028 %
+  band 3    60 s down primed   Cc 2.2 nF Cdiv  10 nF: peak  +0.067 % (vs staircase  +0.066 %), after 1 ms low-pass  +0.029 %
+  band 1     1 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak -30.823 % (vs staircase -30.734 %), after 1 ms low-pass -16.384 %
+  band 1    10 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak  -3.883 % (vs staircase  -3.879 %), after 1 ms low-pass  -3.528 %
+  band 2     1 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak -32.523 % (vs staircase -32.506 %), after 1 ms low-pass -17.191 %
+  band 2    10 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak  -4.030 % (vs staircase  -4.026 %), after 1 ms low-pass  -3.663 %
+  band 3     1 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak -30.325 % (vs staircase -30.279 %), after 1 ms low-pass -14.582 %
+  band 3    10 s up   unprimed Cc 2.2 nF Cdiv  10 nF: peak  -3.335 % (vs staircase  -3.330 %), after 1 ms low-pass  -3.055 %
+
+==============================================================================
+6. Tracking buck and FB injection
+==============================================================================
+FB: 200k / 7.32k, injection 8.25k + 8.25k from PA4 (DAC1_OUT1), 47 nF at the mid-point
+  V_out = 40.44 - 12.12 x V_dac
+  DAC 0.2 V (buffer low limit) -> 38.02 V (highest usable); DAC 0 V (fault) -> 40.44 V ceiling; DAC 3.1 V -> 2.87 V; blackout floor at 3.05 V -> 3.47 V
+  DAC pin high-impedance -> 28.3 V target, but the buck is disabled whenever the MCU is in reset
+  needed: worst-case V_f 36.0 V + 1.0 V headroom = 37.0 V -> margin 1.02 V at the DAC's low limit
+  12-bit DAC on 3.3 V: 0.806 mV/LSB -> 9.8 mV of V_out per code
+  DAC load: sinks 48 uA at 0.2 V, sources 127 uA at 3.1 V
+  injection filter pole 821 Hz (tau 0.19 ms): V_out settles to 95 % in ~0.6 ms after a DAC step
+  loop gain vs. a plain divider at 20 V: x0.38 (lower crossover, more phase margin)
+  loop gain vs. a plain divider at 30 V: x0.57 (lower crossover, more phase margin)
+  loop gain vs. a plain divider at 38 V: x0.72 (lower crossover, more phase margin)
+  L_min (datasheet, M=0.25) at 39 V = 24.4 uH; SRR1260-330M min 26.4 uH -> OK
+  Vin 48.0 V, V_out  3.50 V: D 0.073, t_on   182 ns, t_off  2318 ns, ripple 0.25 A p-p, peak at 1.4 A 1.52 A
+  Vin 52.8 V, V_out  3.50 V: D 0.066, t_on   166 ns, t_off  2334 ns, ripple 0.25 A p-p, peak at 1.4 A 1.52 A
+  Vin 48.0 V, V_out 20.00 V: D 0.417, t_on  1042 ns, t_off  1458 ns, ripple 0.88 A p-p, peak at 1.4 A 1.84 A
+  Vin 48.0 V, V_out 30.00 V: D 0.625, t_on  1562 ns, t_off   938 ns, ripple 0.85 A p-p, peak at 1.4 A 1.83 A
+  Vin 48.0 V, V_out 38.00 V: D 0.792, t_on  1979 ns, t_off   521 ns, ripple 0.60 A p-p, peak at 1.4 A 1.70 A
+  Vin 48.0 V, V_out 40.44 V: D 0.842, t_on  2106 ns, t_off   394 ns, ripple 0.48 A p-p, peak at 1.4 A 1.64 A
+  Vin 43.2 V, V_out 38.00 V: D 0.880, t_on  2199 ns, t_off   301 ns, ripple 0.35 A p-p, peak at 1.4 A 1.57 A
+  V_out ripple at 20 V: 27 mV p-p with 10.3 uF effective
+  V_out ripple at 30 V: 26 mV p-p with 10.3 uF effective
+  losses at 31 V / 1.4 A: IC 0.67 W, inductor 0.22 W, efficiency 98.0 %
+  forced-PWM with the LED dark at 20 V: IC 0.06 W, inductor 0.10 W
+Aux buck: 5.525 V; t_on 230 ns; ripple 0.65 A p-p; L_min 2.8 uH
+  aux UVLO: on 36.2 V typ (EN threshold 1.1-1.4 V -> 31.9-40.6 V)
+  RT: main 64.9k -> 400 kHz (table), aux 52.3k -> 500 kHz (table)
+V_out sense: 1000k/82.0k -> 40.4 V reads 3.06 V (Thevenin 75.8 k)
+48 V sense: 100k/6.2k -> 52.8 V reads 3.08 V (Thevenin 5.8 k)
+
+==============================================================================
+7. Turn-on from blackout, final fade to black
+==============================================================================
+  blackout: sinks in their dead zones, V_out at the 3.5 V floor -> the array cannot conduct
+  turn-on to 5 uA: V_out rises first (C_a lifts the cathode ~16 V), then the sink pulls it back down in 52.13 ms; the LED current rises only in the last ~2 V
+  turn-on to 140 uA: V_out rises first (C_a lifts the cathode ~16 V), then the sink pulls it back down in 1.86 ms; the LED current rises only in the last ~2 V
+  turn-on to 1000 uA: V_out rises first (C_a lifts the cathode ~16 V), then the sink pulls it back down in 0.26 ms; the LED current rises only in the last ~2 V
+  turn-on to 100000 uA: V_out rises first (C_a lifts the cathode ~16 V), then the sink pulls it back down in 0.00 ms; the LED current rises only in the last ~2 V
+  voltage-mode tail: one buck-DAC code = 9.8 mV -> 1.5 % LED current per code; 1 decade per 1.50 V of V_out
+    natural decay limit at   5000 nA: e-fold in     2.1 ms
+    natural decay limit at   1000 nA: e-fold in    10.3 ms
+    natural decay limit at    100 nA: e-fold in   103.3 ms
+    natural decay limit at     10 nA: e-fold in  1033.5 ms
+  sink release from 5 uA without the tail: I(t) = C nNV_T/(t + 2.1 ms) -> 0.5 uA after 19 ms
+
+==============================================================================
+8. Power and thermal
+==============================================================================
+  V_f 29.9 V: LED 41.9 W, FET 1.20 W, shunt 0.20 W, buck 0.89 W, aux+Board B 1.0 W -> 48 V load 45.2 W = 41 % of LRS-100-48
+  V_f 36.0 V: LED 50.4 W, FET 1.20 W, shunt 0.20 W, buck 0.93 W, aux+Board B 1.0 W -> 48 V load 53.7 W = 49 % of LRS-100-48
+  Board A dissipation at full: 2.8 W; still air h ~12 W/m2K both sides on 54 cm2 -> 7.7 K/W, board average +22 C over enclosure air
+  NDT3055L 1.2 W at ~50 C/W (SOT-223 tab on ~5 cm2 over L1 and L4, 1 oz) -> junction +82 C over air; at 45 C air: 127 C (150 C max)
+  headroom 0.8 V instead of 1.0 V at full current saves 0.28 W at the FET
+  short across the LED at full V_out: 1.4 A x 31 V = 43 W until the comparator trips (~0.1 ms)
+  V_out stuck at the 40.4 V ceiling with a 28.6 V LED: 16.4 W on the FET -> comparator trip
+
+==============================================================================
+9. Trace widths (IPC-2221, 10 C rise)
+==============================================================================
+  48 V input                               1.50 A: outer 1 oz  0.53 mm, inner 0.5 oz  2.73 mm
+  V_out / LED+                             1.50 A: outer 1 oz  0.53 mm, inner 0.5 oz  2.73 mm
+  cathode, ch1 drain/source, 0.1 ohm force 1.50 A: outer 1 oz  0.53 mm, inner 0.5 oz  2.73 mm
+  SW node (rms)                            1.50 A: outer 1 oz  0.53 mm, inner 0.5 oz  2.73 mm
+  ch2 force (160 mA)                       0.20 A: outer 1 oz  0.03 mm, inner 0.5 oz  0.17 mm
+  5.5 V aux                                0.60 A: outer 1 oz  0.15 mm, inner 0.5 oz  0.77 mm
+  signals                                  0.05 A: outer 1 oz  0.00 mm, inner 0.5 oz  0.03 mm
+
+==============================================================================
+10. Leakage
+==============================================================================
+  NDT3055L 65 nA, 2N7002BK 2.3 nA, 2N7002 2.6 nA, tap 2 nA, board -4 nA -> net 68 nA = 0.049 % at 140 uA
+  cathode tap: 1 M into 1 nF, ADC 5 pF sampled at 100 Hz -> 0.5 nA average

@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  design:
+    name: Design (netlists, ERC, calculations)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy
+      - name: Regenerate hardware files and run the connectivity check
+        run: python3 design/build.py
+      - name: Design calculations and crossover simulation (asserts its limits)
+        run: python3 design/calc.py
+
+  board-a:
+    name: Board A firmware (STM32G431)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: firmware/board-a
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Arm toolchain, CMake and Ninja
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi cmake ninja-build
+      - name: Host tests
+        run: make -C tests
+      - name: Build
+        run: |
+          cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+          cmake --build build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: board-a-firmware
+          path: |
+            firmware/board-a/build/board_a.elf
+            firmware/board-a/build/board_a.bin
+            firmware/board-a/build/board_a.hex
+
+  board-b:
+    name: Board B firmware (ESPHome, ESP32-S3)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: firmware/board-b
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install esphome==2026.9.0
+      - name: Unit tests
+        run: make -C tests
+      - name: Throwaway secrets for the build (never the real ones)
+        run: |
+          python3 - <<'PY'
+          import base64, os
+          key = lambda: base64.b64encode(os.urandom(32)).decode()
+          lines = [
+              'wifi_ssid: "ci"', 'wifi_password: "ci-password"', 'fallback_password: "ci-fallback"',
+              'sync_key: "ci-sync-key-not-secret"',
+          ] + [f'xtm{i}_api_key: "{key()}"' for i in range(1, 5)]
+          open("secrets.yaml", "w").write("\n".join(lines) + "\n")
+          PY
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-esphome-2026.9.0
+      - name: Compile fixture 1
+        run: esphome compile xtm-1.yaml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: board-b-firmware
+          path: firmware/board-b/.esphome/build/xtm-1/.pioenvs/xtm-1/firmware.factory.bin
+          if-no-files-found: warn
