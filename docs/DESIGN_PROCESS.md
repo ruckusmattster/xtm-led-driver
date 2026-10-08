@@ -84,10 +84,6 @@ I wrote a detailed brief with the requirements and a set of "locked decisions" t
 6. A 16-bit quad DAC and a logarithmic curve.
 7. An ESP32 running ESPHome on Board B, with an encoder, a push button and a sync button.
 
-And one rule I care about more than any of them: **don't invent part numbers.** If a part can't
-be confirmed to exist and be stocked, describe it so I can search for it. A wrong part number
-costs a board revision.
-
 ## 3. Phase 1: the review that changed the plan
 
 The first phase was a critique of the brief before any schematic existed. Three of the locked
@@ -125,22 +121,6 @@ fixture, not just matched current.
 
 The real-time control went to an **STM32G431** on Board A, so fades, ranging, headroom and faults
 stay deterministic and independent of Wi-Fi: a Wi-Fi stack crash can't leave the LED unsafe.
-
-### My answers
-
-The review ended with fourteen questions (I answered thirteen; the last kept its default). The
-ones that shaped the design:
-
-| Question | My answer | Consequence |
-| --- | --- | --- |
-| Fourth DC range and the other changes? | Yes | Built as proposed |
-| Bench-test the XTM before layout? | Keep testing to a minimum; make assumptions where necessary | No pre-layout tests. The design assumes ≤50 nA of bypass inside the XTM, and the tail's end point is a firmware setting in case the last few µA misbehave |
-| Enclosure? | Wood or plastic; metal only for heatsinking | An ESP32 with its own antenna; Board A cools through its own copper |
-| Link lost to Board B? | Blink and drop to 20% | Board A blinks twice and settles at 20%; planned restarts hold the level |
-| Sync button? | Toggling on makes every other fixture follow this one; ownership moves to whoever toggles on | ESP-NOW, fixture to fixture |
-| Haze? | None | No conformal coating, but cleaning stays mandatory |
-| Fixture matching? | Lux at a set distance at a couple of levels, if simple | Two-point light matching stored on Board A |
-| DMX? | No | — |
 
 ## 4. Phase 2: the detailed design
 
@@ -220,12 +200,7 @@ bypass, 0.3–1 nF on the cathode) and makes the one thing that depends on them,
 point, a setting. The bring-up procedure is seven steps, each with a pass line, that prove the
 board is safe and the loops behave; calibration and a flicker check catch the rest.
 
-## 5. The independent final check
-
-Before calling Phase 2 done, every part number was checked against a distributor or
-manufacturer page, and then a separate, independent pass went over the whole design against the
-datasheets, looking for mistakes rather than improvements. Between them they changed these,
-several of which would have cost a board revision:
+## 5. The independent check
 
 | Found | Changed |
 | --- | --- |
@@ -310,23 +285,7 @@ Its trade-offs shaped the board:
 - The link to Board A moved to IO1/IO2, keeping UART0 (which the boot ROM talks on) off Board A's
   line; IO3, a strapping pin, is left spare.
 
-## 8. What I'd pass on
-
-- **Write requirements as numbers you can measure.** "0.1%", "nothing over 1% from 100 Hz to
-  20 kHz", "240 fps". Every decision after that was checked against them.
-- **Let a review challenge the locked decisions.** Three of mine were wrong, and the reasons
-  were physics, not taste.
-- **Model the dynamics, not just the static values.** The crossover dip was invisible in every
-  steady-state calculation.
-- **Keep one source of truth for connectivity**, and check it on every build.
-- **Verify every part number on the day, and describe what you can't.** The final check still
-  found a wrong can size, a wrong shaft and a connector variant that wouldn't fit.
-- **Automate the rules you care about, then review what rules can't see.** DRC-clean isn't the
-  same as right; the build guide's review list is the other half.
-- **Minimise testing up front, but design the procedures so that a wrong assumption shows up at
-  bring-up**, with a setting to adjust rather than a board to respin.
-
-## 9. What's next
+## 8. What's next
 
 1. Build the first set and run bring-up; the procedures are written to fail early and clearly.
 2. Measure what the design assumed about the XTM at microamp currents (its low-current slope,
