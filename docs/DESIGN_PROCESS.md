@@ -3,9 +3,7 @@
 How this went from "a dimmer for my Xicato fixtures" to a two-board, four-decade driver with its
 own firmware and scripted layout, in the order it happened, with the reasoning at each turn.
 
-I did this in collaboration with Claude (Anthropic's AI). I set the requirements, answered the
-questions and made the calls at each gate; Claude did the analysis, the circuit design and
-calculations, the firmware, the layout scripts, and independent check passes over its own work.
+I did this in collaboration with Claude. Claude assisted in firmware development and testing, documentation, and helped answer my questions regarding design practices.
 The complete documents from the two design phases are in [`design-record/`](design-record/).
 
 ```mermaid
